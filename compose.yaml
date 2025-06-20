@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"   # AMQP порт
+      - "15672:15672" # Порт для rabbitmq-management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+  cpe_locate_service:
+    build: .
+    container_name: cpe_locate_service
+    command: uvicorn cpe_locate_service:app --host 0.0.0.0 --port 8080 --ssl-keyfile key.pem --ssl-certfile cert.pem --reload
+    ports:
+      - "8080:8080"
+    depends_on:
+      - rabbitmq
+
+  config_status_service:
+    build: .
+    container_name: config_status_service
+    command: uvicorn config_status_service:app --host 0.0.0.0 --port 8081 --ssl-keyfile key.pem --ssl-certfile cert.pem --reload
+    ports:
+      - "8081:8081"
+    depends_on:
+      - rabbitmq
+
+  task_messenger:
+    build: .
+    container_name: task_messenger
+    command: python task_messenger.py
+    depends_on:
+      - rabbitmq
+      - cpe_locate_service
