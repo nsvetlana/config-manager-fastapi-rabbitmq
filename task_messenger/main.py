@@ -1,4 +1,3 @@
-
 import asyncio
 import httpx
 from broker import consume_messages, tasks_db
@@ -12,7 +11,7 @@ async def process_task(task_data):
         # Service A is assumed to be available via HTTPS on 8080
         async with httpx.AsyncClient(verify="cert.pem") as client:
             response = await client.post(
-                f"https://localhost:8080/api/v1/equipment/cpe/{equipment_id}",
+                f"https://0.0.0.0:8080/api/v1/equipment/cpe/{equipment_id}",
                 json=task_payload,
             )
             response_json = response.json()
