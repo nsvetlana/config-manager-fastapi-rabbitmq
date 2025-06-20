@@ -1,27 +1,26 @@
-
 import asyncio
 import json
 import aio_pika
 
-# In-memory хранилище для задач
+# In-memory storage for tasks
 tasks_db = {}
 
-# URL для подключения к RabbitMQ
+# URL to connect to RabbitMQ
 RABBITMQ_URL = "amqp://guest:guest@localhost/"
 
-# Имя очереди для задач конфигурации
+# Queue name for configuration tasks
 QUEUE_NAME = "config_tasks"
 
 
 async def publish_message(message: dict):
     """
-    Публикует сообщение в очередь RabbitMQ.
+    Publishes a message to the RabbitMQ queue.
     """
     connection = await aio_pika.connect_robust(RABBITMQ_URL)
     try:
         async with connection:
             channel = await connection.channel()
-            # Объявляем очередь (durable – очередь сохраняется при рестарте сервера)
+            # Declare the queue (durable – the queue is preserved when the server restarts)
             queue = await channel.declare_queue(QUEUE_NAME, durable=True)
             body = json.dumps(message).encode()
             await channel.default_exchange.publish(
@@ -38,7 +37,7 @@ async def publish_message(message: dict):
 
 async def consume_messages(callback):
     """
-    Потребляет сообщения из очереди RabbitMQ и вызывает callback с данными сообщения.
+    Consumes messages from the RabbitMQ queue and calls the callback with the message data.
     """
     connection = await aio_pika.connect_robust(RABBITMQ_URL)
     channel = await connection.channel()
