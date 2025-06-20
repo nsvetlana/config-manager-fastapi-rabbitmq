@@ -5,14 +5,14 @@ from broker import publish_message, consume_messages
 import aio_pika
 
 
-# Фейковая реализация обмена сообщений
+# Fake implementation of message exchange
 class FakeExchange:
     async def publish(self, message, routing_key):
         self.last_message = message
         self.last_routing_key = routing_key
 
 
-# Фейковый канал: declare_queue возвращает FakeQueue с заданным именем.
+# Fake channel: declare_queue returns a FakeQueue with the given name.
 class FakeChannel:
     async def declare_queue(self, queue_name, durable):
         return FakeQueue(queue_name, [FakeMessage(json.dumps({"fake": "data"}).encode())])
@@ -22,7 +22,7 @@ class FakeChannel:
         return FakeExchange()
 
 
-# Фейковое подключение, возвращающее FakeChannel.
+# Fake connection, returning a FakeChannel.
 class FakeConnection:
     async def channel(self):
         return FakeChannel()
@@ -38,17 +38,17 @@ async def fake_connect_robust(url):
     return FakeConnection()
 
 
-# Фейковый класс сообщения.
+# Fake message class.
 class FakeMessage:
     def __init__(self, body):
         self.body = body
 
-    # Метод process теперь является синхронным и возвращает контекстный менеджер.
+    # The process method is now synchronous and returns a context manager.
     def process(self):
         return FakeMessageContext(self)
 
 
-# Фейковый контекст для обработки сообщения.
+# Fake context manager for processing a message.
 class FakeMessageContext:
     def __init__(self, message):
         self.message = message
@@ -60,7 +60,7 @@ class FakeMessageContext:
         pass
 
 
-# Обновлённый FakeQueueIterator, поддерживающий асинхронный контекстный менеджер.
+# Updated FakeQueueIterator supporting an asynchronous context manager.
 class FakeQueueIterator:
     def __init__(self, messages):
         self._messages = messages.copy()
@@ -80,7 +80,7 @@ class FakeQueueIterator:
         raise StopAsyncIteration
 
 
-# Обновлённый FakeQueue, который возвращает FakeQueueIterator.
+# Updated FakeQueue that returns a FakeQueueIterator.
 class FakeQueue:
     def __init__(self, name, messages):
         self.name = name
@@ -100,7 +100,7 @@ class FakeQueue:
 async def test_publish_message(monkeypatch):
     monkeypatch.setattr(aio_pika, "connect_robust", fake_connect_robust)
     message = {"task_id": "test", "equipment_id": "ABC123", "task_payload": {}}
-    # Если функция завершится без ошибок, тест считается успешным.
+    # If the function completes without errors, the test is considered successful.
     await publish_message(message)
 
 
@@ -113,5 +113,5 @@ async def test_consume_messages(monkeypatch):
         collected.append(data)
 
     await consume_messages(test_callback)
-    # Ожидаем, что фейковое сообщение будет содержать данные {"fake": "data"}
+    # Expect that the fake message will contain data {"fake": "data"}
     assert collected == [{"fake": "data"}]
