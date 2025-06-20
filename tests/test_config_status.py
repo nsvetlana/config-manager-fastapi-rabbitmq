@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 import config_status_service.main as cs_mod  # импортируем модуль, где используется publish_message
 from config_status_service.main import app, tasks_db
 
-# Фиктивная функция публикации, которая ничего не делает (stub)
+# Fake publish function that does nothing (stub)
 async def fake_publish_message(message: dict):
     return
 
@@ -12,7 +12,7 @@ def clear_tasks():
     tasks_db.clear()
 
 def test_create_config_task(monkeypatch):
-    # Переопределяем функцию publish_message в модуле, где она используется
+    # Override the publish_message function in the module where it is used
     monkeypatch.setattr(cs_mod, "publish_message", fake_publish_message)
 
     payload = {
@@ -30,6 +30,6 @@ def test_create_config_task(monkeypatch):
     data = response.json()
     assert "taskId" in data
     task_id = data["taskId"]
-    # Проверяем, что задача сохранена в in‑memory хранилище и статус равен "running"
+    # Check that the task is stored in in-memory storage and its status is "running"
     assert task_id in tasks_db
     assert tasks_db[task_id]["status"] == "running"
