@@ -5,14 +5,14 @@ from task_messenger.main import process_task
 from broker import tasks_db
 import httpx
 
-# Фейковый ответ от сервиса A
+# Fake response from Service A
 class FakeResponse:
     def __init__(self, json_data):
         self._json_data = json_data
     async def json(self):
         return self._json_data
 
-# Фейковый асинхронный клиент, который имитирует успешный вызов
+# Fake asynchronous client that simulates a successful call
 class FakeAsyncClient:
     def __init__(self, *args, **kwargs):
         self.verify = kwargs.get("verify", None)
@@ -38,7 +38,7 @@ async def test_process_task_success(monkeypatch):
     await process_task(task_data)
     assert tasks_db["test-task"]["status"] == "completed"
 
-# Фейковый клиент, имитирующий ошибку подключения
+# Fake client that simulates a connection error
 class FakeAsyncClientFailure(FakeAsyncClient):
     async def post(self, url, json):
         raise Exception("Connection error")
