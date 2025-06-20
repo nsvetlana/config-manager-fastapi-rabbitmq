@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from cpe_locate_service.main import app
 import time
 
-# Отключаем реальное ожидание, чтобы тесты выполнялись быстро
+# Disable real waiting so that tests execute quickly
 @pytest.fixture(autouse=True)
 def override_sleep(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda seconds: None)
@@ -35,6 +35,6 @@ def test_invalid_device_id():
         }
     }
     client = TestClient(app)
-    # Идентификатор меньше 6 символов – ожидаем 404
+    # Identifier is less than 6 characters - expect a 404 error
     response = client.post("/api/v1/equipment/cpe/abc", json=payload)
     assert response.status_code == 404
