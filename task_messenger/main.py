@@ -9,7 +9,7 @@ async def process_task(task_data):
     task_payload = task_data["task_payload"]
 
     try:
-        # Предполагается, что сервис A доступен по HTTPS на 8080
+        # Service A is assumed to be available via HTTPS on 8080
         async with httpx.AsyncClient(verify="cert.pem") as client:
             response = await client.post(
                 f"https://localhost:8080/api/v1/equipment/cpe/{equipment_id}",
@@ -25,7 +25,7 @@ async def process_task(task_data):
     print(f"Task {task_id} completed with response: {response_json}")
 
 async def on_message(data):
-    # Запускаем обработку задачи в отдельной корутине для параллельной обработки
+    # We launch task processing in a separate coroutine for parallel processing
     asyncio.create_task(process_task(data))
 
 async def main():
