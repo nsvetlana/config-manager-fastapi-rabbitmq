@@ -1,0 +1,16 @@
+[project]
+name = "rostelecom-test"
+version = "0.1.0"
+description = "Config manager"
+authors = [
+  { name = "Svetlana N", email = "nsvetlana.ln@yandex.ru" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "aio-pika>=9.5.5",
+    "fastapi[standard]>=0.115.12",
+    "httpx>=0.28.1",
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.0.0",
+    "uvicorn>=0.34.3",
+]
