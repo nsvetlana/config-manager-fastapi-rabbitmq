@@ -1,9 +1,8 @@
-# config_status_service.py
 import uuid
 import re
 from fastapi import FastAPI, HTTPException, Path
 from models import EquipmentConfigRequest, TaskCreationResponse, TaskStatusResponse
-from broker import publish_message, tasks_db  # Импортируем функцию публикации и in-memory хранилище
+from broker import publish_message, tasks_db  # Import the publish function and in-memory storage
 
 app = FastAPI(title="config_status_service")
 
@@ -17,15 +16,15 @@ async def create_config_task(
     if not DEVICE_ID_REGEX.match(id):
         raise HTTPException(status_code=404, detail="The requested equipment is not found")
 
-    # Генерация уникального идентификатора задачи
+    # Generate a unique task identifier
     task_id = str(uuid.uuid4())
-    # Сохраняем задачу во in-memory хранилище
+    # Save the task in in-memory storage
     tasks_db[task_id] = {
         "equipment_id": id,
         "parameters": req.dict(),
-        "status": "running",  # Изначальный статус – running
+        "status": "running",  # Initial status – running
     }
-    # Публикуем сообщение в очередь RabbitMQ
+    # Publishing a message to a RabbitMQ queue
     await publish_message({
         "task_id": task_id,
         "equipment_id": id,
@@ -64,5 +63,5 @@ if __name__ == "__main__":
     )
 
 
-# Запуск через uvicorn:
-# uvicorn config_status_service:app --host 0.0.0.0 --port 8001 --ssl-keyfile=... --ssl-certfile=...
+# Launch via uvicorn::
+# uvicorn config_status_service:app --host 0.0.0.0 --port 8081 --ssl-keyfile=... --ssl-certfile=...
