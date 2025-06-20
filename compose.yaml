@@ -1,16 +1,20 @@
-version: '3.8'
-
 services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
-      - "5672:5672"   # AMQP порт
-      - "15672:15672" # Порт для rabbitmq-management UI
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Port for rabbitmq-management UI
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_port_connectivity" ]
+      interval: 5s
+      retries: 5
+      start_period: 3s
+      timeout: 5s
 
   cpe_locate_service:
     build: .
@@ -28,12 +32,13 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
 
   task_messenger:
     build: .
     container_name: task_messenger
-    command: python task_messenger.py
+    command: python -m task_messenger.main
     depends_on:
       - rabbitmq
       - cpe_locate_service
