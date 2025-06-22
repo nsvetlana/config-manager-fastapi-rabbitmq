@@ -33,33 +33,30 @@ certificates are for local development and testing only—they are not suitable 
 
 ---
 
-## Generating Self‑Signed Certificates
+## Automatic Certificate Generation via Docker Compose
 
-If you don't already have the certificate files in the project root, you can generate them using OpenSSL. For example, in a Unix‑like environment run:
+Instead of manually generating self‑signed certificates and placing them in the project root, this project leverages 
+an automated process using Docker Compose. The openssl service defined in compose.yaml is based on Alpine Linux and 
+performs the following actions during startup:
 
-```bash
-openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
-```
+Certificate Check: The service checks if a certificate file (cert.pem) exists in the mounted ./private volume.
 
-> **Note for Windows Users:**  
-> If the `openssl` command is not recognized, you may install OpenSSL via Chocolatey (e.g., `choco install openssl.light`), use Git Bash, or work with Windows Subsystem for Linux (WSL).
+Automatic Generation: If the certificate is missing, the service installs OpenSSL inside the container and runs a command 
+to generate a new self‑signed certificate and key using a 4096‑bit RSA key. The generated certificate is valid for 365 days 
+and is assigned the subject /CN=localhost.
 
-Place these files in your project root (or the same directory as your Dockerfile) so that the Dockerfile command:
-
-```dockerfile
-COPY cert.pem key.pem ./
-```
-
-can successfully copy them into the build.
-
+Graceful Exit: If the certificate already exists, the service simply logs that no generation is needed and exits successfully.
 ---
+This automated process ensures that your HTTPS services (cpe_locate_service and config_status_service) always have access 
+to the required certificates without manual intervention.
 
 ## Building the Docker Image
 
-A Dockerfile is provided that uses a pre‑configured Python image (with `uv` pre‑installed) and installs the project alongside the certificate files. To build the Docker image, run the following command from the project root:
+A Dockerfile is provided that uses a pre‑configured Python image (with `uv` pre‑installed) and installs the project alongside 
+the certificate files. To build the Docker image, run the following command from the project root:
 
 ```bash
-docker build -t rostelecom-test .
+docker build -t config-manager-fastapi-rabbitmq .
 ```
 
 ---
