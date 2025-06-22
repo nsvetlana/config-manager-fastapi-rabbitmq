@@ -6,7 +6,9 @@ import aio_pika
 tasks_db = {}
 
 # URL to connect to RabbitMQ
-RABBITMQ_URL = "amqp://guest:guest@localhost/"
+import os
+RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq")
+
 
 # Queue name for configuration tasks
 QUEUE_NAME = "config_tasks"
