@@ -30,6 +30,3 @@ EXPOSE 8080 8081
 
 # Reset the ENTRYPOINT to prevent uv from running by default
 ENTRYPOINT []
-
-# By default, start service B (config_status_service) with HTTPS support
-#CMD ["uvicorn", "config_status_service:app", "--host", "0.0.0.0", "--port", "8081", "--ssl-keyfile", "key.pem", "--ssl-certfile", "cert.pem", "--reload"]
