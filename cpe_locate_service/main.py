@@ -40,11 +40,13 @@ def configure_equipment(
     return EquipmentConfigResponse(code=200, message="success")
 
 if __name__ == "__main__":
+    from pathlib import Path
+    base_dir = Path(__file__).resolve().parent.parent
     import uvicorn
     uvicorn.run(
         app,
-        host="0.0.0.0",
-        port=8080,
-        ssl_keyfile="key.pem",
-        ssl_certfile="cert.pem",
+        host = "0.0.0.0",
+        port = 8080,
+        ssl_keyfile = str(base_dir/'private'/'key.pem'),
+        ssl_certfile = str(base_dir / 'private' / 'cert.pem'),
     )
