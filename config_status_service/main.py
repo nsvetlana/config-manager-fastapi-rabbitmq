@@ -53,15 +53,13 @@ async def get_task_status(
         return TaskStatusResponse(code=500, message="Internal provisioning exception")
 
 if __name__ == "__main__":
+    from pathlib import Path
+    base_dir = Path(__file__).resolve().parent.parent
     import uvicorn
     uvicorn.run(
         app,
-        host="localhost",
+        host="0.0.0.0",
         port=8081,
-        ssl_keyfile="key.pem",
-        ssl_certfile="cert.pem",
+        ssl_keyfile=str(base_dir / 'private' / 'key.pem'),
+        ssl_certfile=str(base_dir / 'private' / 'cert.pem'),
     )
-
-
-# Launch via uvicorn::
-# uvicorn config_status_service:app --host 0.0.0.0 --port 8081 --ssl-keyfile=... --ssl-certfile=...
