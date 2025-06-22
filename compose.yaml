@@ -1,8 +1,6 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: rabbitmq
-    hostname: rabbitmq
     ports:
       - "5672:5672"   # AMQP port
       - "15672:15672" # Port for rabbitmq-management UI
@@ -18,27 +16,50 @@ services:
 
   cpe_locate_service:
     build: .
-    container_name: cpe_locate_service
-    command: uvicorn cpe_locate_service:app --host 0.0.0.0 --port 8080 --ssl-keyfile key.pem --ssl-certfile cert.pem --reload
+    volumes:
+      - ./private:/etc/private
+    command: uvicorn cpe_locate_service.main:app --host 0.0.0.0 --port 8080 --ssl-keyfile /etc/private/key.pem --ssl-certfile /etc/private/cert.pem --reload
     ports:
       - "8080:8080"
     depends_on:
-      - rabbitmq
+      openssl:
+        condition: service_completed_successfully
 
   config_status_service:
     build: .
-    container_name: config_status_service
-    command: uvicorn config_status_service:app --host 0.0.0.0 --port 8081 --ssl-keyfile key.pem --ssl-certfile cert.pem --reload
+    volumes:
+      - ./private:/etc/private
+    command: uvicorn config_status_service.main:app --host 0.0.0.0 --port 8081 --ssl-keyfile /etc/private/key.pem --ssl-certfile /etc/private/cert.pem --reload
     ports:
       - "8081:8081"
     depends_on:
       rabbitmq:
         condition: service_healthy
+      openssl:
+        condition: service_completed_successfully
 
   task_messenger:
     build: .
-    container_name: task_messenger
     command: python -m task_messenger.main
     depends_on:
-      - rabbitmq
-      - cpe_locate_service
+      rabbitmq:
+        condition: service_healthy
+      cpe_locate_service:
+        condition: service_started
+
+  openssl:
+    image: alpine:latest
+    working_dir: /app/private
+    volumes:
+      - ./private:/app/private
+    # This service installs OpenSSL, checks for cert.pem,
+    # generates the cert/key if needed, then exits successfully.
+    command: >
+      sh -c "if [ ! -f /app/private/cert.pem ]; then
+               echo 'Generating certificates...';
+               apk add --no-cache openssl;
+               openssl req -x509 -newkey rsa:4096 -keyout /app/private/key.pem -out /app/private/cert.pem -days 365 -nodes -subj '/CN=localhost';
+               echo 'Certificate generation completed successfully.';
+             else
+               echo 'Certificate already exists.';
+             fi;"
