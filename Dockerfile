@@ -28,11 +28,8 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Expose ports: 8080 for service A (cpe_locate_service) and 8081 for service B (config_status_service)
 EXPOSE 8080 8081
 
-# Copy certificates to the container (the key and certificate should be next to the Dockerfile)
-COPY cert.pem key.pem ./
-
 # Reset the ENTRYPOINT to prevent uv from running by default
 ENTRYPOINT []
 
 # By default, start service B (config_status_service) with HTTPS support
-CMD ["uvicorn", "config_status_service:app", "--host", "0.0.0.0", "--port", "8081", "--ssl-keyfile", "key.pem", "--ssl-certfile", "cert.pem", "--reload"]
+#CMD ["uvicorn", "config_status_service:app", "--host", "0.0.0.0", "--port", "8081", "--ssl-keyfile", "key.pem", "--ssl-certfile", "cert.pem", "--reload"]
